@@ -1,0 +1,30 @@
+# Build and dependency files
+node_modules/
+dist/
+build/
+*.pyc
+__pycache__/
+.venv/
+venv/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# System files
+Thumbs.db
+*.log
+npm-debug.log*
+
+# Runtime files
+tmp/
+temp/
