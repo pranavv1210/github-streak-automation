@@ -1,313 +1,95 @@
-# GitHub Streak Maintainer 🔥
+# github-streak-maintainer
 
-Automatically maintain your GitHub contribution streak using GitHub Actions. Never miss a day again!
+`github-streak-maintainer` is a small GitHub Actions repository that keeps a contribution streak active by making a harmless daily update to `streak.txt`, committing it, and pushing it back to the repository on GitHub's servers.
 
-## Overview
+## What it does
 
-This repository uses GitHub Actions to automatically commit changes every day at **12:05 AM IST (6:35 PM UTC)**, ensuring you maintain a continuous contribution streak without any manual effort.
+- Runs automatically every day at 12:05 AM IST using the cron schedule `35 18 * * *`.
+- Supports manual runs from the GitHub Actions tab.
+- Appends a UTC timestamp to `streak.txt`.
+- Creates a commit only when the file changed.
+- Pushes the commit back to the default branch with safe, authenticated GitHub Actions permissions.
+- Includes a small random delay and a short list of commit messages to make the automation less repetitive.
 
-The workflow runs on GitHub's servers, so your machine doesn't need to be on. Perfect for keeping your GitHub profile active 24/7!
+## How the automation works
 
-## Features
+The workflow in [.github/workflows/streak.yml](.github/workflows/streak.yml) runs on GitHub-hosted Ubuntu runners. It checks out the repository, configures Git identity, appends the current timestamp to `streak.txt`, waits a random few minutes, selects a commit message, and then commits and pushes only when there is something to commit.
 
-✨ **Fully Automated**
-- Runs automatically every day at a scheduled time
-- No manual intervention required
+Because the entire workflow runs on GitHub infrastructure, your laptop can be turned off and the schedule will still run.
 
-🤖 **Smart Commits**
-- Random commit messages for variety
-- Automatic timestamp logging
-- Handles edge cases gracefully
+## Repository structure
 
-🛡️ **Production Ready**
-- Works 100% on GitHub servers
-- Includes error handling
-- Never fails even if there are no changes
+```text
+.github/workflows/streak.yml
+.gitignore
+README.md
+streak.txt
+```
 
-⚙️ **Easy Customization**
-- Simple cron schedule configuration
-- Easily adjust timing to your preference
+## Workflow permissions
 
-## Setup Instructions
-
-### 1. Repository Setup
-
-This repository is already configured as `github-streak-automation` in your GitHub account.
-
-### 2. Verify Repository Settings
-
-Ensure the following is configured in your repository:
-
-**Settings → Actions → General**
-- ✅ "Allow all actions and reusable workflows" (or configure as needed)
-- ✅ "Read and write permissions" is enabled for workflows
-
-**Settings → Actions → General → Workflow Permissions**
-- ✅ "Read and write permissions"
-- ✅ "Allow GitHub Actions to create and approve pull requests" (optional)
-
-### 3. Understanding the Workflow
-
-The workflow is located in `.github/workflows/streak.yml` and does the following:
-
-1. **Checkout**: Pulls the latest repository code
-2. **Configure Git**: Sets up Git credentials for commits
-3. **Update File**: Appends current timestamp to `streak.txt`
-4. **Random Message**: Selects a random motivational commit message
-5. **Random Delay**: Adds 0-30 second delay before commit
-6. **Check Changes**: Verifies if there are changes to commit
-7. **Commit**: Stages and commits the changes
-8. **Push**: Pushes changes back to GitHub
-9. **Complete**: Workflow finishes (never fails)
-
-### 4. Manual Trigger
-
-You can also manually trigger the workflow:
-
-1. Go to **Actions** tab
-2. Select **GitHub Streak Automation** workflow
-3. Click **Run workflow** → **Run workflow**
-
-## Workflow Permissions
-
-The workflow uses the following permission:
+This repository uses the minimum permission needed for automatic commits:
 
 ```yaml
 permissions:
   contents: write
 ```
 
-This allows the workflow to:
-- ✅ Read repository contents
-- ✅ Create commits
-- ✅ Push changes to main branch
+To make this work in your repository, go to:
 
-GitHub automatically provides the necessary authentication token (`GITHUB_TOKEN`) for these operations.
+1. `Settings`
+2. `Actions`
+3. `General`
+4. `Workflow permissions`
+5. Select `Read and write permissions`
 
-## How the Automation Works
+If the repository is newly created or forked, also make sure GitHub Actions are enabled for the repository.
 
-### Daily Schedule
+## How to fork and use it
 
-The workflow runs on a **cron schedule**:
+1. Fork this repository into your GitHub account.
+2. Open the forked repository on GitHub.
+3. Go to `Settings > Actions > General` and enable `Read and write permissions`.
+4. Confirm that the workflow file exists at [.github/workflows/streak.yml](.github/workflows/streak.yml).
+5. Push or edit the repository once if GitHub asks you to enable Actions for the fork.
+6. Open the `Actions` tab and run the workflow manually once if you want to confirm the setup immediately.
+
+If you keep the default branch name as `main`, the workflow will push back to that branch automatically.
+
+## GitHub Actions setup instructions
+
+1. Make sure the repository has Actions enabled.
+2. Set workflow permissions to `Read and write permissions`.
+3. Save the settings.
+4. Visit the `Actions` tab.
+5. Run the workflow manually the first time to confirm that commits and pushes work.
+
+## Customizing the commit timing
+
+The schedule uses UTC cron syntax because GitHub Actions schedules are evaluated in UTC.
+
+Current schedule:
 
 ```yaml
 - cron: '35 18 * * *'
 ```
 
-**Cron Format**: `minute hour day month day-of-week`
+That corresponds to 12:05 AM IST.
 
-- `35` = minute (35)
-- `18` = hour in UTC (18:00 UTC = 6:35 PM UTC)
-- `*` = any day of month
-- `*` = any month
-- `*` = any day of week
+To change the time, update the cron expression in the workflow file. A few examples:
 
-**Time Conversion**:
-- UTC: 6:35 PM (18:35)
-- IST (UTC+5:30): 12:05 AM (next day)
+- `35 18 * * *` for 12:05 AM IST
+- `30 19 * * *` for 1:00 AM IST
+- `0 0 * * *` for 5:30 AM IST
 
-### Git Configuration
+The workflow also includes a random delay before committing. If you want to make it shorter or longer, edit the delay step in [.github/workflows/streak.yml](.github/workflows/streak.yml).
 
-The workflow automatically configures Git:
+## Customizing commit messages
 
-```bash
-git config --global user.name "github-actions[bot]"
-git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-```
+The workflow uses a small list of commit messages, including the required base message `Daily streak update`. You can edit the message array in [.github/workflows/streak.yml](.github/workflows/streak.yml) to add, remove, or simplify the options.
 
-This uses GitHub's official bot account for commits.
+## Notes
 
-### Commit Messages
-
-The workflow randomly selects from this list of messages:
-
-- 🔥 Maintaining the streak!
-- ⚡ Keep the momentum going
-- 🎯 Daily commitment to code
-- ✨ Another day, another commit
-- 💪 Streak strong and growing
-- 🚀 Consistency is key
-- 📈 Building great habits
-- 🎊 Keeping contributions flowing
-- ⭐ One more day of progress
-- 🌟 Never miss a day
-
-Add your own messages by editing the `MESSAGES` array in the workflow!
-
-### Smart Error Handling
-
-The workflow includes error handling to ensure it never fails:
-
-- **No Changes Check**: If no changes exist, the workflow completes successfully
-- **Continue on Error**: Push operation uses `continue-on-error: true`
-- **Graceful Completion**: Final step always succeeds
-
-## Customization
-
-### Change the Schedule Time
-
-Edit `.github/workflows/streak.yml` and modify the cron expression:
-
-```yaml
-on:
-  schedule:
-    - cron: '35 18 * * *'  # Change this
-```
-
-**Common Schedule Examples**:
-
-| Time | Cron Expression | Notes |
-|------|-----------------|-------|
-| 12:05 AM IST | `35 18 * * *` | 6:35 PM UTC previous day |
-| 1:00 AM IST | `30 19 * * *` | 7:30 PM UTC previous day |
-| 9:00 AM IST | `30 03 * * *` | 3:30 AM UTC same day |
-| Every 6 hours | `0 */6 * * *` | Runs at 0, 6, 12, 18 UTC |
-| Every hour | `0 * * * *` | Runs hourly |
-
-💡 **Tip**: Use [crontab.guru](https://crontab.guru) for easy cron scheduling!
-
-### Customize Commit Messages
-
-Edit `.github/workflows/streak.yml` and modify the `MESSAGES` array:
-
-```bash
-MESSAGES=(
-  "🔥 Maintaining the streak!"
-  "Your custom message here"
-  "Another message"
-)
-```
-
-### Change the Tracked File
-
-Edit `.github/workflows/streak.yml` - change `streak.txt` to any filename you want:
-
-```yaml
-- name: Update streak file
-  run: |
-    echo "$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> your-file-name.txt
-```
-
-### Adjust Random Delay
-
-The workflow adds a random 0-30 second delay. Modify in `.github/workflows/streak.yml`:
-
-```bash
-sleep $((RANDOM % 30))  # Change 30 to your preferred max seconds
-```
-
-### Change Default Branch
-
-If your default branch isn't `main`, edit the workflow to use your branch name:
-
-```yaml
-git push origin your-branch-name
-```
-
-## File Structure
-
-```
-github-streak-automation/
-├── .github/
-│   └── workflows/
-│       └── streak.yml          # Main workflow file
-├── streak.txt                  # Streak tracking log
-├── .gitignore                  # Git ignore rules
-└── README.md                   # This file
-```
-
-## Monitoring the Workflow
-
-### View Workflow Runs
-
-1. Go to your repository
-2. Click **Actions** tab
-3. Select **GitHub Streak Automation**
-4. View all runs with timestamps and status
-
-### Check Logs
-
-1. Click on a specific run
-2. Expand the `maintain-streak` job
-3. View detailed step-by-step logs
-
-### Verify Commits
-
-Check your repository's commit history to confirm daily commits are being made automatically.
-
-## Troubleshooting
-
-### Workflow Not Running
-
-1. **Check if scheduled workflows are enabled**:
-   - Settings → Actions → General
-   - Ensure "Allow all actions and reusable workflows" is selected
-
-2. **Verify permissions**:
-   - Settings → Actions → General
-   - Ensure "Read and write permissions" is enabled
-
-3. **Check branch name**:
-   - Ensure the workflow references the correct branch name (default: `main`)
-
-### Commits Not Appearing
-
-1. **Check permissions**: Ensure the workflow has write access to contents
-2. **Verify default branch**: Confirm the branch name in the workflow matches your repository's default branch
-3. **Check git configuration**: View workflow logs for any errors during git setup
-
-### Random Delay Taking Too Long
-
-The delay is 0-30 seconds by default. Reduce it if needed:
-
-```bash
-sleep $((RANDOM % 10))  # 0-10 seconds instead
-```
-
-## Security Considerations
-
-✅ **Safe and Secure**:
-- Uses GitHub's official bot account
-- Only writes to your own repository
-- No external APIs or third-party services
-- Permissions are minimal and well-scoped
-
-⚠️ **Best Practices**:
-- Don't commit sensitive information to this repository
-- This file is public, so anyone can see your commit history
-- Use branch protection rules if needed
-
-## FAQ
-
-**Q: Will this affect my real contributions?**
-A: No! The commits are separate from your actual coding work. Use this for the streak automation only.
-
-**Q: Can I adjust the time?**
-A: Yes! Edit the cron expression in `.github/workflows/streak.yml`. Use [crontab.guru](https://crontab.guru) for help.
-
-**Q: What if GitHub is down?**
-A: The workflow will be retried automatically. Scheduled workflows have built-in retry mechanisms.
-
-**Q: Can I run it manually?**
-A: Yes! Click **Actions** → **GitHub Streak Automation** → **Run workflow** to trigger manually.
-
-**Q: Does my laptop need to be on?**
-A: No! The workflow runs on GitHub's servers, so it works 24/7 regardless of your laptop's status.
-
-**Q: Can I change the file that gets updated?**
-A: Yes! Edit the workflow to append to any file you want. Just make sure it exists in the repository.
-
-## License
-
-This repository is provided as-is for personal use.
-
-## Support
-
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review workflow logs in the Actions tab
-3. Verify all setup steps are completed
-
----
-
-**Happy streaking! 🔥** Keep your GitHub contributions growing every single day!
+- The tracked file is `streak.txt`.
+- The workflow avoids failure when there are no changes to commit.
+- This repository is intended as a beginner-friendly template and can be forked as-is.

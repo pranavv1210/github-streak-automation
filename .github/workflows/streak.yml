@@ -1,0 +1,88 @@
+name: Maintain GitHub streak
+
+on:
+  schedule:
+    # 12:05 AM IST = 6:35 PM UTC the previous day.
+    - cron: '35 18 * * *'
+  workflow_dispatch:
+
+# Give the workflow only the permission it needs to write commits.
+permissions:
+  contents: write
+
+# Prevent overlapping runs from stepping on the same file.
+concurrency:
+  group: streak-maintainer
+  cancel-in-progress: false
+
+jobs:
+  update-streak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Check out the repository so the workflow can update and commit files.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Configure Git identity for the automated commit.
+      - name: Configure git identity
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # Append a UTC timestamp to the streak file so every run produces a real change.
+      - name: Append timestamp to streak.txt
+        shell: bash
+        run: |
+          printf '%s\n' "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> streak.txt
+
+      # Add a small random delay so the automation does not look perfectly mechanical.
+      - name: Wait a random delay before committing
+        shell: bash
+        run: |
+          delay_seconds=$((RANDOM % 181))
+          echo "Waiting ${delay_seconds} seconds before committing."
+          sleep "${delay_seconds}"
+
+      # Pick a message from a short list while keeping the required base message available.
+      - name: Pick commit message
+        id: commit_message
+        shell: bash
+        run: |
+          messages=(
+            "Daily streak update"
+            "Daily streak update: keeping the streak alive"
+            "Daily streak update: consistency wins"
+            "Daily streak update: another day, another commit"
+            "Daily streak update: small automated push"
+          )
+          message="${messages[$((RANDOM % ${#messages[@]}))]}"
+          echo "message=${message}" >> "$GITHUB_OUTPUT"
+
+      # Stage the file, commit only when there is something new, and report the result.
+      - name: Commit change if needed
+        id: commit_change
+        shell: bash
+        run: |
+          git add streak.txt
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes detected, skipping commit."
+            exit 0
+          fi
+
+          git commit -m "${{ steps.commit_message.outputs.message }}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # Push only when the commit step actually created a commit.
+      - name: Push changes safely
+        if: steps.commit_change.outputs.changed == 'true'
+        shell: bash
+        run: |
+          target_branch="${GITHUB_REF_NAME:-main}"
+          git push origin "HEAD:${target_branch}"

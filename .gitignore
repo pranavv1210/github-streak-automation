@@ -1,30 +1,24 @@
-# Build and dependency files
-node_modules/
-dist/
-build/
-*.pyc
-__pycache__/
-.venv/
-venv/
-
-# IDE and editor files
+# Editor and OS files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
+Thumbs.db
 
-# Environment files
+# Logs and temporary files
+*.log
+npm-debug.log*
+tmp/
+temp/
+
+# Optional local environment files
 .env
 .env.local
 .env.*.local
 
-# System files
-Thumbs.db
-*.log
-npm-debug.log*
-
-# Runtime files
-tmp/
-temp/
+# Common build outputs if you extend the repository later
+dist/
+build/
+node_modules/
