@@ -1,6 +1,9 @@
 name: Maintain GitHub streak
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     # 12:05 AM IST = 6:35 PM UTC the previous day.
     - cron: '35 18 * * *'
@@ -17,6 +20,7 @@ concurrency:
 
 jobs:
   update-streak:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
